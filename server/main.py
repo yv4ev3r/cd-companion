@@ -112,6 +112,7 @@ CAMERA_HEADING_HEARTBEAT_INTERVAL = 1.0  # seconds between unchanged camera broa
 from server.hotkeys import (
     HOTKEY_SETTINGS_FILE, DEFAULT_HOTKEYS,
     VK_NAMES, VK_MOD_SHIFT, VK_MOD_CTRL, VK_MOD_ALT, MOD_NAMES,
+    HOTKEY_MODIFIERS,
     XINPUT_GAMEPAD_DPAD_UP, XINPUT_GAMEPAD_DPAD_DOWN,
     XINPUT_GAMEPAD_DPAD_LEFT, XINPUT_GAMEPAD_DPAD_RIGHT,
     XINPUT_GAMEPAD_BACK, XINPUT_GAMEPAD_LEFT_SHOULDER,
@@ -497,10 +498,10 @@ def _hotkey_thread():
 
     def _display(hk):
         vk = hk["vk"]
-        mod = hk.get("mod", 0)
+        mods = hk.get("mods") or ([hk["mod"]] if hk.get("mod") else [])
         name = VK_NAMES.get(vk, f"0x{vk:02X}")
-        if mod and mod in MOD_NAMES:
-            return f"{MOD_NAMES[mod]}+{name}"
+        if mods:
+            return "+".join(MOD_NAMES.get(m, f"0x{m:02X}") for m in mods) + "+" + name
         return name
 
     for hk_id, cfg in hotkeys.items():
@@ -595,14 +596,14 @@ def _hotkey_thread():
                 continue
 
             vk = cfg["vk"]
-            mod = cfg.get("mod", 0)
+            mods = cfg.get("mods") or ([cfg["mod"]] if cfg.get("mod") else [])
 
             key_down = bool(get_key(vk) & 0x8000)
-            if mod:
-                mod_down = bool(get_key(mod) & 0x8000)
-            else:
-                # Sem modificador — garantir que nenhum modificador está pressionado
-                mod_down = not any(get_key(m) & 0x8000 for m in (VK_MOD_SHIFT, VK_MOD_CTRL, VK_MOD_ALT))
+            down_mods = {
+                m for m in HOTKEY_MODIFIERS
+                if get_key(m) & 0x8000
+            }
+            mod_down = down_mods == set(mods)
 
             pressed = key_down and mod_down
             was_pressed = key_state.get(hk_id, False)

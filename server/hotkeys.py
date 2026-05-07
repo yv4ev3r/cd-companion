@@ -18,14 +18,21 @@ DEFAULT_HOTKEYS = {
 VK_NAMES = {
     0x70: "F1", 0x71: "F2", 0x72: "F3", 0x73: "F4", 0x74: "F5", 0x75: "F6",
     0x76: "F7", 0x77: "F8", 0x78: "F9", 0x79: "F10", 0x7A: "F11", 0x7B: "F12",
-    0x4E: "N",
-    0x59: "Y",
-    0x46: "F",
+    0x7C: "F13", 0x7D: "F14", 0x7E: "F15", 0x7F: "F16", 0x80: "F17", 0x81: "F18",
+    0x82: "F19", 0x83: "F20", 0x84: "F21", 0x85: "F22", 0x86: "F23", 0x87: "F24",
+    0x4E: "N", 0x59: "Y", 0x46: "F",
+    0x24: "Home", 0x23: "End", 0x2D: "Ins", 0x2E: "Del",
+    0x21: "PgUp", 0x22: "PgDown",
+    0x26: "Up", 0x28: "Down", 0x25: "Left", 0x27: "Right",
+    0x60: "Num+0", 0x61: "Num+1", 0x62: "Num+2", 0x63: "Num+3", 0x64: "Num+4",
+    0x65: "Num+5", 0x66: "Num+6", 0x67: "Num+7", 0x68: "Num+8", 0x69: "Num+9",
+    0x6A: "Num+*", 0x6B: "Num++", 0x6D: "Num+-", 0x6E: "Num+.", 0x6F: "Num+/",
 }
 VK_MOD_SHIFT = 0x10
 VK_MOD_CTRL  = 0x11
 VK_MOD_ALT   = 0x12
 MOD_NAMES = {VK_MOD_CTRL: "Ctrl", VK_MOD_ALT: "Alt", VK_MOD_SHIFT: "Shift"}
+HOTKEY_MODIFIERS = (VK_MOD_SHIFT, VK_MOD_CTRL, VK_MOD_ALT)
 
 XINPUT_GAMEPAD_DPAD_UP    = 0x0001
 XINPUT_GAMEPAD_DPAD_DOWN  = 0x0002
@@ -149,24 +156,42 @@ def _controller_buttons(get_state):
     return buttons
 
 
+def _normalize_hotkey_config(saved, default):
+    cfg = dict(default)
+    if not saved or "vk" not in saved:
+        saved = {}
+    cfg["vk"] = int(saved.get("vk", cfg.get("vk", 0)))
+    if "mods" in saved:
+        raw_mods = saved.get("mods") or []
+        if not isinstance(raw_mods, list):
+            raw_mods = [raw_mods]
+        mods = []
+        for mod in raw_mods:
+            try:
+                mod = int(mod)
+            except Exception:
+                continue
+            if mod in HOTKEY_MODIFIERS and mod not in mods:
+                mods.append(mod)
+    else:
+        mod = int(saved.get("mod", cfg.get("mod", 0)) or 0)
+        mods = [mod] if mod in HOTKEY_MODIFIERS else []
+    cfg["mods"] = mods
+    cfg["mod"] = mods[0] if len(mods) == 1 else 0
+    cfg["enabled"] = bool(saved.get("enabled", cfg.get("enabled", True)))
+    return cfg
+
+
 def _load_hotkey_settings():
     try:
         with open(HOTKEY_SETTINGS_FILE, 'r', encoding='utf-8') as f:
             data = json.load(f)
         result = {}
         for hk_id, default in DEFAULT_HOTKEYS.items():
-            saved = data.get(hk_id)
-            if saved and "vk" in saved:
-                result[hk_id] = {
-                    "vk": saved["vk"],
-                    "mod": saved.get("mod", 0),
-                    "enabled": saved.get("enabled", True),
-                }
-            else:
-                result[hk_id] = dict(default)
+            result[hk_id] = _normalize_hotkey_config(data.get(hk_id), default)
         return result
     except Exception:
-        return {k: dict(v) for k, v in DEFAULT_HOTKEYS.items()}
+        return {k: _normalize_hotkey_config(None, v) for k, v in DEFAULT_HOTKEYS.items()}
 
 
 def _save_hotkey_settings(hotkeys):

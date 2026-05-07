@@ -1,3 +1,8 @@
+## v0.10.02
+
+### Fixed
+- Configurable keyboard hotkeys now support single keys, one-modifier shortcuts, and multi-modifier shortcuts. F13-F24 and numpad keys can also be assigned.
+
 ## v0.10.01
 
 ### Added

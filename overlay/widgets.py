@@ -51,11 +51,22 @@ _SAVE_DIR = os.path.join(os.environ.get('LOCALAPPDATA', ''), 'CD_Teleport')
 _HOTKEY_SETTINGS_FILE = os.path.join(_SAVE_DIR, 'cd_hotkeys.json')
 _OPEN_NEARBY_DEFAULT = {'vk': 0x4E, 'mod': 0x10}  # Shift+N
 
-_VK_MAP = {f'F{i}': 0x6F + i for i in range(1, 13)}
+_VK_MAP = {f'F{i}': 0x6F + i for i in range(1, 25)}
 _VK_MAP.update({chr(c): c for c in range(0x41, 0x5B)})   # A–Z
 _VK_MAP.update({str(d): 0x30 + d for d in range(10)})     # 0–9
+_VK_MAP.update({f'Num+{d}': 0x60 + d for d in range(10)})
+_VK_MAP.update({f'Num{d}': 0x60 + d for d in range(10)})
+_VK_MAP.update({
+    'Home': 0x24, 'End': 0x23, 'Ins': 0x2D, 'Del': 0x2E,
+    'PgUp': 0x21, 'PgDown': 0x22,
+    'Up': 0x26, 'Down': 0x28, 'Left': 0x25, 'Right': 0x27,
+    'Num+*': 0x6A, 'Num++': 0x6B, 'Num+-': 0x6D,
+    'Num+.': 0x6E, 'Num+/': 0x6F,
+})
 _MOD_MAP  = {'Shift': 0x10, 'Ctrl': 0x11, 'Alt': 0x12}
 _VK_DISP  = {v: k for k, v in _VK_MAP.items()}
+_VK_DISP.update({0x60 + d: f'Num+{d}' for d in range(10)})
+_VK_DISP.update({0x6A: 'Num+*', 0x6B: 'Num++', 0x6D: 'Num+-', 0x6E: 'Num+.', 0x6F: 'Num+/'})
 _MOD_DISP = {0x10: 'Shift', 0x11: 'Ctrl', 0x12: 'Alt'}
 
 # Modifier bitmask for RegisterHotKey (different from VK codes above)
@@ -63,15 +74,23 @@ _MOD_WIN_MAP = {'Ctrl': 0x0002, 'Shift': 0x0004, 'Alt': 0x0001}
 _MOD_WIN_DISP_ORDER = [(0x0002, 'Ctrl'), (0x0004, 'Shift'), (0x0001, 'Alt')]
 
 
+def _seq_parts(seq_str):
+    seq_str = seq_str.split(',')[0].strip()
+    parts = [p.strip() for p in seq_str.split('+')]
+    if 'Num' in parts:
+        num_idx = parts.index('Num')
+        return 'Num+' + '+'.join(parts[num_idx + 1:]), parts[:num_idx]
+    return parts[-1], parts[:-1]
+
+
 def _seq_str_to_vk_win(seq_str):
     """'Ctrl+Shift+M' → (vk, mod_win) for RegisterHotKey. Supports multiple modifiers."""
-    parts = [p.strip() for p in seq_str.split('+')]
-    key = parts[-1]
+    key, mod_parts = _seq_parts(seq_str)
     vk = _VK_MAP.get(key.upper() if len(key) == 1 else key)
     if vk is None:
         return None
     mod_win = 0
-    for p in parts[:-1]:
+    for p in mod_parts:
         m = _MOD_WIN_MAP.get(p)
         if m:
             mod_win |= m
@@ -86,23 +105,25 @@ def _vk_win_to_seq_str(vk, mod_win):
     return '+'.join(parts)
 
 
-def _vk_to_seq_str(vk, mod):
+def _vk_to_seq_str(vk, mods):
+    """(vk, mods) → 'Shift+N' or 'Ctrl+Shift+N' for QKeySequence.
+    mods can be int (single VK mod) or list of VK mods."""
     key = _VK_DISP.get(vk, f'VK{vk:#04x}')
-    prefix = f'{_MOD_DISP[mod]}+' if mod in _MOD_DISP else ''
-    return f'{prefix}{key}'
+    if isinstance(mods, int):
+        mods = [mods] if mods else []
+    parts = [_MOD_DISP[m] for m in mods if m in _MOD_DISP]
+    parts.append(key)
+    return '+'.join(parts)
 
 
 def _seq_str_to_vk(seq_str):
-    """'Shift+N' → (vk, mod). Returns None se inválido."""
-    parts = [p.strip() for p in seq_str.split('+')]
-    key = parts[-1]
+    """'Shift+N' or 'Ctrl+Shift+N' → (vk, mods_list). Returns None if invalid."""
+    key, mod_parts = _seq_parts(seq_str)
     vk = _VK_MAP.get(key.upper() if len(key) == 1 else key)
     if vk is None:
         return None
-    mod = 0
-    for m in parts[:-1]:
-        mod = _MOD_MAP.get(m, mod)
-    return vk, mod
+    mods = [_MOD_MAP[m] for m in mod_parts if m in _MOD_MAP]
+    return vk, mods
 
 
 def _find_process_window(exe_name):
@@ -453,9 +474,18 @@ class SettingsDialog(QDialog):
             self._to_hk._hk_finalized = True
 
         def _to_hk_key_press(e):
-            if self._to_hk._hk_finalized:
-                self._to_hk.clear()
-                self._to_hk._hk_finalized = False
+            key = e.key()
+            mods = e.modifiers()
+            if key not in (Qt.Key_Shift, Qt.Key_Control, Qt.Key_Alt, Qt.Key_Meta):
+                if self._to_hk._hk_finalized:
+                    self._to_hk.clear()
+                    self._to_hk._hk_finalized = False
+                if mods == Qt.NoModifier and key < 0x1000000:
+                    seq_str = QKeySequence(key).toString()
+                    if seq_str and _seq_str_to_vk(seq_str) is not None:
+                        self._to_hk.setKeySequence(QKeySequence(key))
+                        self._to_hk._hk_finalized = True
+                        return
             QKeySequenceEdit.keyPressEvent(self._to_hk, e)
 
         self._to_hk.keySequenceChanged.connect(_to_on_seq_changed)
@@ -613,9 +643,18 @@ class SettingsDialog(QDialog):
             self._focus_toggle_hk._hk_finalized = True
 
         def _ft_hk_key_press(e):
-            if self._focus_toggle_hk._hk_finalized:
-                self._focus_toggle_hk.clear()
-                self._focus_toggle_hk._hk_finalized = False
+            key = e.key()
+            mods = e.modifiers()
+            if key not in (Qt.Key_Shift, Qt.Key_Control, Qt.Key_Alt, Qt.Key_Meta):
+                if self._focus_toggle_hk._hk_finalized:
+                    self._focus_toggle_hk.clear()
+                    self._focus_toggle_hk._hk_finalized = False
+                if mods == Qt.NoModifier and key < 0x1000000:
+                    seq_str = QKeySequence(key).toString()
+                    if seq_str and _seq_str_to_vk(seq_str) is not None:
+                        self._focus_toggle_hk.setKeySequence(QKeySequence(key))
+                        self._focus_toggle_hk._hk_finalized = True
+                        return
             QKeySequenceEdit.keyPressEvent(self._focus_toggle_hk, e)
 
         self._focus_toggle_hk.keySequenceChanged.connect(_ft_on_seq_changed)
@@ -631,16 +670,19 @@ class SettingsDialog(QDialog):
         self._focus_toggle_hk.focusOutEvent = _ft_hk_focus_out
 
         ft_hk_vk = 0
-        ft_hk_mod = 0
+        ft_hk_mods = []
         try:
             with open(_HOTKEY_SETTINGS_FILE, 'r', encoding='utf-8') as _f:
                 _ft_hk_data = json.load(_f).get('focus_toggle', {})
                 ft_hk_vk = _ft_hk_data.get('vk', ft_hk_vk)
-                ft_hk_mod = _ft_hk_data.get('mod', ft_hk_mod)
+                if 'mods' in _ft_hk_data:
+                    ft_hk_mods = _ft_hk_data['mods']
+                elif _ft_hk_data.get('mod'):
+                    ft_hk_mods = [_ft_hk_data['mod']]
         except Exception:
             pass
         if ft_hk_vk:
-            self._focus_toggle_hk.setKeySequence(QKeySequence(_vk_to_seq_str(ft_hk_vk, ft_hk_mod)))
+            self._focus_toggle_hk.setKeySequence(QKeySequence(_vk_to_seq_str(ft_hk_vk, ft_hk_mods)))
         ft_hk_row = QWidget()
         ft_hk_row_layout = QHBoxLayout(ft_hk_row)
         ft_hk_row_layout.setContentsMargins(0, 0, 0, 0)
@@ -836,9 +878,18 @@ class SettingsDialog(QDialog):
             self._nearby_hk._hk_finalized = True
 
         def _hk_key_press(e):
-            if self._nearby_hk._hk_finalized:
-                self._nearby_hk.clear()
-                self._nearby_hk._hk_finalized = False
+            key = e.key()
+            mods = e.modifiers()
+            if key not in (Qt.Key_Shift, Qt.Key_Control, Qt.Key_Alt, Qt.Key_Meta):
+                if self._nearby_hk._hk_finalized:
+                    self._nearby_hk.clear()
+                    self._nearby_hk._hk_finalized = False
+                if mods == Qt.NoModifier and key < 0x1000000:
+                    seq_str = QKeySequence(key).toString()
+                    if seq_str and _seq_str_to_vk(seq_str) is not None:
+                        self._nearby_hk.setKeySequence(QKeySequence(key))
+                        self._nearby_hk._hk_finalized = True
+                        return
             QKeySequenceEdit.keyPressEvent(self._nearby_hk, e)
 
         self._nearby_hk.keySequenceChanged.connect(_on_seq_changed)
@@ -858,15 +909,18 @@ class SettingsDialog(QDialog):
         self._nearby_hk.focusOutEvent = _hk_focus_out
 
         hk_vk = _OPEN_NEARBY_DEFAULT['vk']
-        hk_mod = _OPEN_NEARBY_DEFAULT['mod']
+        hk_mods = [_OPEN_NEARBY_DEFAULT['mod']]
         try:
             with open(_HOTKEY_SETTINGS_FILE, 'r', encoding='utf-8') as _f:
                 _hk_data = json.load(_f).get('open_nearby', {})
                 hk_vk = _hk_data.get('vk', hk_vk)
-                hk_mod = _hk_data.get('mod', hk_mod)
+                if 'mods' in _hk_data:
+                    hk_mods = _hk_data['mods']
+                elif 'mod' in _hk_data:
+                    hk_mods = [_hk_data['mod']] if _hk_data['mod'] else []
         except Exception:
             pass
-        self._nearby_hk.setKeySequence(QKeySequence(_vk_to_seq_str(hk_vk, hk_mod)))
+        self._nearby_hk.setKeySequence(QKeySequence(_vk_to_seq_str(hk_vk, hk_mods)))
         nb_hk_row = QWidget()
         nb_hk_row_layout = QHBoxLayout(nb_hk_row)
         nb_hk_row_layout.setContentsMargins(0, 0, 0, 0)
@@ -1011,9 +1065,18 @@ class SettingsDialog(QDialog):
             self._waypoints_hk._hk_finalized = True
 
         def _wp_hk_key_press(e):
-            if self._waypoints_hk._hk_finalized:
-                self._waypoints_hk.clear()
-                self._waypoints_hk._hk_finalized = False
+            key = e.key()
+            mods = e.modifiers()
+            if key not in (Qt.Key_Shift, Qt.Key_Control, Qt.Key_Alt, Qt.Key_Meta):
+                if self._waypoints_hk._hk_finalized:
+                    self._waypoints_hk.clear()
+                    self._waypoints_hk._hk_finalized = False
+                if mods == Qt.NoModifier and key < 0x1000000:
+                    seq_str = QKeySequence(key).toString()
+                    if seq_str and _seq_str_to_vk(seq_str) is not None:
+                        self._waypoints_hk.setKeySequence(QKeySequence(key))
+                        self._waypoints_hk._hk_finalized = True
+                        return
             QKeySequenceEdit.keyPressEvent(self._waypoints_hk, e)
 
         def _wp_hk_focus_in(e):
@@ -1028,15 +1091,18 @@ class SettingsDialog(QDialog):
         self._waypoints_hk.keyPressEvent = _wp_hk_key_press
 
         wp_hk_vk = 0x59
-        wp_hk_mod = 0x10
+        wp_hk_mods = [0x10]
         try:
             with open(_HOTKEY_SETTINGS_FILE, 'r', encoding='utf-8') as _f:
                 _wp_hk_data = json.load(_f).get('open_waypoints', {})
                 wp_hk_vk = _wp_hk_data.get('vk', wp_hk_vk)
-                wp_hk_mod = _wp_hk_data.get('mod', wp_hk_mod)
+                if 'mods' in _wp_hk_data:
+                    wp_hk_mods = _wp_hk_data['mods']
+                elif 'mod' in _wp_hk_data:
+                    wp_hk_mods = [_wp_hk_data['mod']] if _wp_hk_data['mod'] else []
         except Exception:
             pass
-        self._waypoints_hk.setKeySequence(QKeySequence(_vk_to_seq_str(wp_hk_vk, wp_hk_mod)))
+        self._waypoints_hk.setKeySequence(QKeySequence(_vk_to_seq_str(wp_hk_vk, wp_hk_mods)))
         wp_hk_row = QWidget()
         wp_hk_row_layout = QHBoxLayout(wp_hk_row)
         wp_hk_row_layout.setContentsMargins(0, 0, 0, 0)
@@ -1287,20 +1353,20 @@ class SettingsDialog(QDialog):
             except Exception:
                 data = {}
             if parsed is not None:
-                vk, mod = parsed
-                data['open_nearby'] = {'vk': vk, 'mod': mod, 'enabled': True}
+                vk, mods = parsed
+                data['open_nearby'] = {'vk': vk, 'mods': mods, 'enabled': True}
             else:
-                data['open_nearby'] = {'vk': 0, 'mod': 0, 'enabled': False}
+                data['open_nearby'] = {'vk': 0, 'mods': [], 'enabled': False}
             if wp_parsed is not None:
-                wp_vk, wp_mod = wp_parsed
-                data['open_waypoints'] = {'vk': wp_vk, 'mod': wp_mod, 'enabled': True}
+                wp_vk, wp_mods = wp_parsed
+                data['open_waypoints'] = {'vk': wp_vk, 'mods': wp_mods, 'enabled': True}
             else:
-                data['open_waypoints'] = {'vk': 0, 'mod': 0, 'enabled': False}
+                data['open_waypoints'] = {'vk': 0, 'mods': [], 'enabled': False}
             if ft_parsed is not None:
-                ft_vk, ft_mod = ft_parsed
-                data['focus_toggle'] = {'vk': ft_vk, 'mod': ft_mod, 'enabled': True}
+                ft_vk, ft_mods = ft_parsed
+                data['focus_toggle'] = {'vk': ft_vk, 'mods': ft_mods, 'enabled': True}
             else:
-                data['focus_toggle'] = {'vk': 0, 'mod': 0, 'enabled': False}
+                data['focus_toggle'] = {'vk': 0, 'mods': [], 'enabled': False}
             if to_parsed is not None:
                 to_vk, to_mod_win = to_parsed
                 data['toggle_overlay'] = {'vk': to_vk, 'mod_win': to_mod_win}
