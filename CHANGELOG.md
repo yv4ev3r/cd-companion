@@ -1,3 +1,8 @@
+## v0.10.01
+
+### Added
+- Korean language (ko) contributed by Doleun.
+
 ## v0.10.00
 
 ### Added
