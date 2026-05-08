@@ -21,7 +21,7 @@
   "waypoints.not_found": "找不到傳送點",
   "waypoints.prompt_name": "傳送點名稱：",
   "waypoints.default_name": "{0}, {1}",
-  "waypoints.default_name_abyss": "[阿比斯] {0}, {1}",
+  "waypoints.default_name_abyss": "[深淵] {0}, {1}",
   "waypoints.teleport_title": "傳送",
   "waypoints.teleport_btn": "傳送",
   "waypoints.center_title": "畫面中心",
