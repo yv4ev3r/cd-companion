@@ -1,3 +1,9 @@
+## v0.10.03
+
+### Added
+- German language support, contributed by HaZt-Panda.
+- Chinese (Simplified) and Chinese (Traditional) language support, contributed by yv4ev3r.
+
 ## v0.10.02
 
 ### Fixed
