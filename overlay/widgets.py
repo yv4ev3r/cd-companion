@@ -24,12 +24,14 @@ import overlay.i18n as i18n
 
 try:
     from server.main import (
+        set_keyboard_hotkey_paused as _set_keyboard_hotkey_paused,
         set_nearby_hotkey_paused as _set_nearby_hotkey_paused,
         set_nearby_popup_hwnd as _set_nearby_popup_hwnd,
         set_controller_hotkey_paused as _set_controller_hotkey_paused,
         set_waypoints_popup_hwnd as _set_waypoints_popup_hwnd,
     )
 except Exception:
+    _set_keyboard_hotkey_paused = None
     _set_nearby_hotkey_paused = None
     _set_nearby_popup_hwnd = None
     _set_controller_hotkey_paused = None
@@ -49,6 +51,8 @@ except Exception:
 # ── Hotkey helpers ────────────────────────────────────────────────────
 _SAVE_DIR = os.path.join(os.environ.get('LOCALAPPDATA', ''), 'CD_Teleport')
 _HOTKEY_SETTINGS_FILE = os.path.join(_SAVE_DIR, 'cd_hotkeys.json')
+_TELEPORT_MARKER_DEFAULT = {'vk': 0x74, 'mod': 0}      # F5
+_TELEPORT_ABORT_DEFAULT = {'vk': 0x74, 'mod': 0x10}    # Shift+F5
 _OPEN_NEARBY_DEFAULT = {'vk': 0x4E, 'mod': 0x10}  # Shift+N
 
 _VK_MAP = {f'F{i}': 0x6F + i for i in range(1, 25)}
@@ -804,6 +808,50 @@ class SettingsDialog(QDialog):
         option('useSharedMemoryEntity', i18n.t('settings.option_shared_memory'),
                i18n.t('settings.option_shared_memory_desc'))
 
+        section(i18n.t('settings.section_keyboard_hotkey'), tp_layout)
+        tp_marker_hk_lbl = QLabel(i18n.t('settings.teleport_marker_hotkey_label'))
+        self._tp_marker_hk = self._make_hotkey_editor()
+        tp_marker_hk_vk = _TELEPORT_MARKER_DEFAULT['vk']
+        tp_marker_hk_mods = []
+        try:
+            with open(_HOTKEY_SETTINGS_FILE, 'r', encoding='utf-8') as _f:
+                _tp_marker_data = json.load(_f).get('teleport_marker', {})
+                tp_marker_hk_vk = _tp_marker_data.get('vk', tp_marker_hk_vk)
+                if 'mods' in _tp_marker_data:
+                    tp_marker_hk_mods = _tp_marker_data['mods']
+                elif 'mod' in _tp_marker_data:
+                    tp_marker_hk_mods = [_tp_marker_data['mod']] if _tp_marker_data['mod'] else []
+        except Exception:
+            pass
+        self._tp_marker_hk.setKeySequence(QKeySequence(_vk_to_seq_str(
+            tp_marker_hk_vk, tp_marker_hk_mods)))
+        active_layout[0].addWidget(tp_marker_hk_lbl)
+        active_layout[0].addWidget(self._make_hotkey_row(self._tp_marker_hk))
+
+        tp_abort_hk_lbl = QLabel(i18n.t('settings.teleport_abort_hotkey_label'))
+        self._tp_abort_hk = self._make_hotkey_editor()
+        tp_abort_hk_vk = _TELEPORT_ABORT_DEFAULT['vk']
+        tp_abort_hk_mods = [_TELEPORT_ABORT_DEFAULT['mod']]
+        try:
+            with open(_HOTKEY_SETTINGS_FILE, 'r', encoding='utf-8') as _f:
+                _tp_abort_data = json.load(_f).get('abort', {})
+                tp_abort_hk_vk = _tp_abort_data.get('vk', tp_abort_hk_vk)
+                if 'mods' in _tp_abort_data:
+                    tp_abort_hk_mods = _tp_abort_data['mods']
+                elif 'mod' in _tp_abort_data:
+                    tp_abort_hk_mods = [_tp_abort_data['mod']] if _tp_abort_data['mod'] else []
+        except Exception:
+            pass
+        self._tp_abort_hk.setKeySequence(QKeySequence(_vk_to_seq_str(
+            tp_abort_hk_vk, tp_abort_hk_mods)))
+        active_layout[0].addWidget(tp_abort_hk_lbl)
+        active_layout[0].addWidget(self._make_hotkey_row(self._tp_abort_hk))
+
+        tp_hk_note = QLabel(i18n.t('settings.note_hotkey_restart'))
+        tp_hk_note.setStyleSheet('color:#64748b; font:11px "Segoe UI"; margin-top:-4px;')
+        active_layout[0].addWidget(tp_hk_note)
+
+        section(i18n.t('settings.section_teleport'), tp_layout)
         self._center_y_value = QLabel()
         self._center_y_value.setStyleSheet(
             "color:#ffd060; font:13px 'Consolas'; min-width:48px;")
@@ -1319,6 +1367,81 @@ class SettingsDialog(QDialog):
         btn_row.addWidget(save_btn)
         outer_layout.addLayout(btn_row)
 
+    def _make_hotkey_editor(self):
+        editor = QKeySequenceEdit()
+        editor.setFixedHeight(32)
+        editor.setAttribute(Qt.WA_StyledBackground, True)
+        editor.setStyleSheet(
+            "QKeySequenceEdit{background:#e2e8f0;color:#111827;"
+            "border:1px solid #64748b;border-radius:6px;padding:4px 8px;"
+            "selection-background-color:#ffd060;selection-color:#111827;}"
+            "QKeySequenceEdit:focus{border:1px solid #ffd060;}")
+        line = editor.findChild(QLineEdit)
+        if line:
+            line.setStyleSheet(
+                "QLineEdit{background:#e2e8f0;color:#111827;border:none;"
+                "selection-background-color:#ffd060;selection-color:#111827;}")
+        editor.setToolTip(i18n.t('settings.hotkey_restart_tooltip'))
+        editor._hk_finalized = False
+
+        def _on_seq_changed(seq):
+            first = seq.toString().split(', ')[0]
+            if first != seq.toString():
+                editor.setKeySequence(QKeySequence(first))
+            editor._hk_finalized = True
+
+        def _key_press(e):
+            key = e.key()
+            mods = e.modifiers()
+            if key not in (Qt.Key_Shift, Qt.Key_Control, Qt.Key_Alt, Qt.Key_Meta):
+                if editor._hk_finalized:
+                    editor.clear()
+                    editor._hk_finalized = False
+                if mods == Qt.NoModifier and key < 0x1000000:
+                    seq_str = QKeySequence(key).toString()
+                    if seq_str and _seq_str_to_vk(seq_str) is not None:
+                        editor.setKeySequence(QKeySequence(key))
+                        editor._hk_finalized = True
+                        return
+            QKeySequenceEdit.keyPressEvent(editor, e)
+
+        def _focus_in(e):
+            if _set_keyboard_hotkey_paused:
+                _set_keyboard_hotkey_paused(True)
+            if _set_nearby_hotkey_paused:
+                _set_nearby_hotkey_paused(True)
+            QKeySequenceEdit.focusInEvent(editor, e)
+
+        def _focus_out(e):
+            if _set_keyboard_hotkey_paused:
+                _set_keyboard_hotkey_paused(False)
+            if _set_nearby_hotkey_paused:
+                _set_nearby_hotkey_paused(False)
+            QKeySequenceEdit.focusOutEvent(editor, e)
+
+        editor.keySequenceChanged.connect(_on_seq_changed)
+        editor.keyPressEvent = _key_press
+        editor.focusInEvent = _focus_in
+        editor.focusOutEvent = _focus_out
+        return editor
+
+    def _make_hotkey_row(self, editor):
+        row = QWidget()
+        row_layout = QHBoxLayout(row)
+        row_layout.setContentsMargins(0, 0, 0, 0)
+        row_layout.setSpacing(6)
+        row_layout.addWidget(editor)
+        clear_btn = QPushButton(i18n.t('settings.btn_clear'))
+        clear_btn.setFixedHeight(32)
+        clear_btn.setStyleSheet(
+            "QPushButton{background:rgba(255,80,80,.15);border:1px solid "
+            "rgba(255,80,80,.4);color:#ff6060;border-radius:6px;"
+            "padding:0 10px;font:11px 'Segoe UI';}"
+            "QPushButton:hover{background:rgba(255,80,80,.3);}")
+        clear_btn.clicked.connect(lambda: editor.clear())
+        row_layout.addWidget(clear_btn)
+        return row
+
     def _on_cancel(self):
         if self.parent():
             self.parent().setWindowOpacity(self._original_opacity)
@@ -1346,6 +1469,10 @@ class SettingsDialog(QDialog):
         ft_parsed = _seq_str_to_vk(ft_seq_str)
         to_seq_str = self._to_hk.keySequence().toString()
         to_parsed = _seq_str_to_vk_win(to_seq_str)
+        tp_marker_seq_str = self._tp_marker_hk.keySequence().toString()
+        tp_marker_parsed = _seq_str_to_vk(tp_marker_seq_str)
+        tp_abort_seq_str = self._tp_abort_hk.keySequence().toString()
+        tp_abort_parsed = _seq_str_to_vk(tp_abort_seq_str)
         try:
             try:
                 with open(_HOTKEY_SETTINGS_FILE, 'r', encoding='utf-8') as f:
@@ -1372,6 +1499,17 @@ class SettingsDialog(QDialog):
                 data['toggle_overlay'] = {'vk': to_vk, 'mod_win': to_mod_win}
             else:
                 data['toggle_overlay'] = {'vk': 0, 'mod_win': 0}
+            if tp_marker_parsed is not None:
+                tp_marker_vk, tp_marker_mods = tp_marker_parsed
+                data['teleport_marker'] = {
+                    'vk': tp_marker_vk, 'mods': tp_marker_mods, 'enabled': True}
+            else:
+                data['teleport_marker'] = {'vk': 0, 'mods': [], 'enabled': False}
+            if tp_abort_parsed is not None:
+                tp_abort_vk, tp_abort_mods = tp_abort_parsed
+                data['abort'] = {'vk': tp_abort_vk, 'mods': tp_abort_mods, 'enabled': True}
+            else:
+                data['abort'] = {'vk': 0, 'mods': [], 'enabled': False}
             os.makedirs(os.path.dirname(_HOTKEY_SETTINGS_FILE), exist_ok=True)
             with open(_HOTKEY_SETTINGS_FILE, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=2)

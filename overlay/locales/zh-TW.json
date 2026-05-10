@@ -90,6 +90,8 @@
   "settings.controller_combo_label": "控制器組合鍵",
   "settings.open_hotkey_label": "開啟快捷鍵",
   "settings.open_combo_label": "開啟組合鍵",
+  "settings.teleport_marker_hotkey_label": "前往標記快捷鍵",
+  "settings.teleport_abort_hotkey_label": "取消傳送快捷鍵",
   "settings.source_label": "來源",
   "settings.realtime_transport_label": "即時傳輸",
 

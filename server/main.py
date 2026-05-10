@@ -390,6 +390,7 @@ async def _broadcast_status(status: str):
 # ── Hotkey polling thread ────────────────────────────────────────────
 
 _hotkey_loop = None  # referência ao asyncio loop para schedule de ações
+_keyboard_hotkey_paused = False  # True enquanto usuário edita atalho de teclado
 _nearby_hotkey_paused = False  # True enquanto usuário edita o atalho nas Settings
 _controller_hotkey_paused = False  # True enquanto usuário grava combo de controle nas Settings
 _nearby_popup_hwnd = None
@@ -421,6 +422,10 @@ def set_waypoints_panel_open(open_: bool):
 def set_nearby_hotkey_paused(paused: bool):
     global _nearby_hotkey_paused
     _nearby_hotkey_paused = paused
+
+def set_keyboard_hotkey_paused(paused: bool):
+    global _keyboard_hotkey_paused
+    _keyboard_hotkey_paused = paused
 
 def set_controller_hotkey_paused(paused: bool):
     global _controller_hotkey_paused
@@ -585,6 +590,9 @@ def _hotkey_thread():
         controller_focus_toggle_pressed = focus_pressed
 
         for hk_id, cfg in hotkeys.items():
+            if _keyboard_hotkey_paused:
+                key_state[hk_id] = False
+                continue
             if not cfg["enabled"]:
                 key_state[hk_id] = False
                 continue

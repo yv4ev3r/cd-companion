@@ -90,6 +90,8 @@
 "settings.controller_combo_label": "Controller-Kombination",
 "settings.open_hotkey_label": "Öffnen-Hotkey",
 "settings.open_combo_label": "Öffnen-Kombination",
+"settings.teleport_marker_hotkey_label": "Hotkey zum Marker",
+"settings.teleport_abort_hotkey_label": "Teleport abbrechen-Hotkey",
 "settings.source_label": "Quelle",
 "settings.realtime_transport_label": "Echtzeit-Transport",
 

@@ -90,6 +90,8 @@
   "settings.controller_combo_label": "手柄组合键",
   "settings.open_hotkey_label": "打开快捷键",
   "settings.open_combo_label": "打开组合键",
+  "settings.teleport_marker_hotkey_label": "前往标记快捷键",
+  "settings.teleport_abort_hotkey_label": "取消传送快捷键",
   "settings.source_label": "来源",
   "settings.realtime_transport_label": "实时传输",
 

@@ -90,6 +90,8 @@
   "settings.controller_combo_label": "Controller combo",
   "settings.open_hotkey_label": "Open hotkey",
   "settings.open_combo_label": "Open combo",
+  "settings.teleport_marker_hotkey_label": "Go to marker hotkey",
+  "settings.teleport_abort_hotkey_label": "Abort hotkey",
   "settings.source_label": "Source",
   "settings.realtime_transport_label": "Realtime transport",
 

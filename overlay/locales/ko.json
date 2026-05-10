@@ -90,6 +90,8 @@
   "settings.controller_combo_label": "컨트롤러 콤보",
   "settings.open_hotkey_label": "열기 단축키",
   "settings.open_combo_label": "열기 콤보",
+  "settings.teleport_marker_hotkey_label": "마커로 이동 단축키",
+  "settings.teleport_abort_hotkey_label": "텔레포트 취소 단축키",
   "settings.source_label": "소스",
   "settings.realtime_transport_label": "실시간 전송 방식",
 

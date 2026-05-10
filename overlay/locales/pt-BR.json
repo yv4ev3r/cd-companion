@@ -90,6 +90,8 @@
   "settings.controller_combo_label": "Combo do controle",
   "settings.open_hotkey_label": "Atalho para abrir",
   "settings.open_combo_label": "Combo para abrir",
+  "settings.teleport_marker_hotkey_label": "Atalho para ir ao marcador",
+  "settings.teleport_abort_hotkey_label": "Atalho para cancelar teleporte",
   "settings.source_label": "Fonte",
   "settings.realtime_transport_label": "Transporte em tempo real",
 
