@@ -1,3 +1,8 @@
+## v0.10.04
+
+### Fixed
+- Teleport hotkeys can now be changed from Settings > Teleport, including Go to Marker and Abort.
+
 ## v0.10.03
 
 ### Added
