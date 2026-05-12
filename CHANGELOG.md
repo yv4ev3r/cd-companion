@@ -1,3 +1,8 @@
+## v0.10.05
+
+### Fixed
+- Hook cache validation: stale `hook_e` cache entries (left over from a previous game patch) are now detected and cleared automatically on attach. Previously, a stale entry could cause the companion to install its hook at the wrong address after a game update, crashing the game when teleporting.
+
 ## v0.10.04
 
 ### Fixed
