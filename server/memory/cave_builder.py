@@ -312,7 +312,15 @@ class CaveBuilderMixin:
         # hook_a escreve td+0x18 via cave_a; sem hook_a, preenchemos aqui.
         if not self.hook_a and self.use_shared_memory_entity:
             if self.refresh_entity_base():
-                log.info("Entity base populated from Freedom Flyer shared memory")
+                entity = self._read_ff_shared_entity()
+                from server.memory.constants import _REDACT
+                if not _REDACT and entity:
+                    log.info(
+                        "Entity base populated from Freedom Flyer shared memory: entity=%#x  pos=%#x",
+                        entity, entity + 0x90,
+                    )
+                else:
+                    log.info("Entity base populated from Freedom Flyer shared memory")
             else:
                 log.warning("Failed to read Freedom Flyer shared memory — entity detection may fail")
 

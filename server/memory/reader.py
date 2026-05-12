@@ -5,6 +5,9 @@ from shared.coord_math import (
     player_heading as _calc_player_heading,
     camera_heading as _calc_camera_heading,
 )
+from server.memory.constants import _REDACT
+
+_HEADING_PACK = struct.Struct('<f')
 
 log = logging.getLogger('cd_server')
 
@@ -71,6 +74,7 @@ class ReaderMixin:
     def get_player_heading(self):
         """Retorna heading em graus via forward vector (RBX+0x80/0x88 do hook_e).
         RBX é salvo em tp+0x28 pela cave_e a cada frame do physics loop.
+        Resultado também escrito em block+OFF_PLYR_HDG para leitura direta no CE.
         Retorna None se hook_e não instalado ou vetor zero."""
         if not self.tp:
             return None
@@ -78,9 +82,23 @@ class ReaderMixin:
             entity = self.pm.read_ulonglong(self.tp + 0x28)
             if not entity:
                 return None
+            if not getattr(self, '_plyr_hdg_logged', False):
+                if not _REDACT:
+                    log.info(
+                        "Player heading source: entity=%#x  fx=%#x  fz=%#x",
+                        entity, entity + 0x80, entity + 0x88,
+                    )
+                self._plyr_hdg_logged = True
             fx = self.pm.read_float(entity + 0x80)
             fz = self.pm.read_float(entity + 0x88)
-            return _calc_player_heading(fx, fz)
+            heading = _calc_player_heading(fx, fz)
+            if heading is not None and self.block:
+                self.pm.write_bytes(
+                    self.block + self.OFF_PLYR_HDG,
+                    _HEADING_PACK.pack(heading),
+                    4,
+                )
+            return heading
         except Exception:
             return None
 

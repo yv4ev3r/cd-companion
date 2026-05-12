@@ -174,8 +174,27 @@ class ScannerMixin:
             self.hook_e = hook_e_addr
             log.info("Physics delta hook found — teleport via delta injection enabled")
         elif "hook_e_rva" in saved:
-            self.hook_e = base + int(saved["hook_e_rva"])
-            log.info("Physics delta hook loaded from cache")
+            rva = int(saved["hook_e_rva"])
+            confirm = self.AOB_PHYS_DELTA_CONFIRM
+            if 0 <= rva + 8 + len(confirm) <= len(data):
+                chunk = data[rva:rva + len(self.ORIG_HOOK_E)]
+                confirm_at_8 = data[rva + 8:rva + 8 + len(confirm)]
+                if chunk == self.ORIG_HOOK_E:
+                    self.hook_e = base + rva
+                    log.info("Physics delta hook loaded from cache")
+                elif chunk[:1] == b'\xE9' and confirm_at_8 == confirm:
+                    self.hook_e = base + rva
+                    log.info("Physics delta hook loaded from cache (E9 at hook point, confirm OK)")
+                else:
+                    self.hook_e = 0
+                    saved.pop("hook_e_rva", None)
+                    _save_hook_offsets(saved)
+                    log.warning("Cached physics delta hook stale — cache cleared")
+            else:
+                self.hook_e = 0
+                saved.pop("hook_e_rva", None)
+                _save_hook_offsets(saved)
+                log.warning("Cached physics delta hook RVA out of range — cache cleared")
         else:
             self.hook_e = 0
             log.warning("Physics delta hook not found — teleport fallback to direct write")
@@ -273,6 +292,11 @@ class ScannerMixin:
 
         self._alloc_block()
         self._install_hooks()
+        if not _REDACT:
+            if self.hook_cam and self.block:
+                log.info("Camera heading: yaw=%#x", self.block + self.OFF_CAM_YAW)
+            if self.hook_e and self.block:
+                log.info("Player heading: hdg=%#x", self.block + self.OFF_PLYR_HDG)
         save_data = {k: v for k, v in {
             "hook_a_rva":       self.hook_a   - base if self.hook_a   else None,
             "hook_b_rva":       self.hook_b   - base if self.hook_b   else None,

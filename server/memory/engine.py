@@ -64,7 +64,8 @@ class TeleportEngine(SharedMemoryMixin, ScannerMixin, MemAllocMixin, CaveBuilder
     OFF_INV     = 0x040
     OFF_MD      = 0x050
     OFF_TP      = 0x060  # teleport target: {tx,ty,tz,0.0f} + flag uint32 = 20 bytes
-    OFF_CAM_YAW = 0x090  # float: camera heading em graus assinados (salvo por cave_cam)
+    OFF_CAM_YAW  = 0x090  # float: camera heading em graus assinados (salvo por cave_cam)
+    OFF_PLYR_HDG = 0x094  # float: player heading em graus 0-360 (escrito por get_player_heading)
     OFF_CA   = 0x100
     OFF_CB   = 0x180
     OFF_CC   = 0x200
