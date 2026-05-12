@@ -560,8 +560,9 @@ class OverlayWindow(QMainWindow):
                 mx = ctypes.c_int16(msg.lParam & 0xFFFF).value
                 my = ctypes.c_int16((msg.lParam >> 16) & 0xFFFF).value
                 rect = self.frameGeometry()
-                lx = mx - rect.left()
-                ly = my - rect.top()
+                dpr = self.devicePixelRatioF()
+                lx = mx / dpr - rect.left()
+                ly = my / dpr - rect.top()
                 w, h = rect.width(), rect.height()
                 b = self._BORDER
                 L = lx < b
@@ -932,9 +933,6 @@ def _show_mode_selector(current_mode):
 
 
 def main():
-    # Habilitar DPI awareness antes de criar o app
-    ctypes.windll.user32.SetProcessDPIAware()
-
     # ── Log file (sem console, logs vão para arquivo) ─────────────────
     # Definido ANTES de importar server.main, pois o logging é configurado
     # no nível do módulo e lê CD_LOG_FILE no momento do import.
@@ -948,6 +946,11 @@ def main():
     # Lê a config ANTES de iniciar o servidor para definir a env var
     # que controla se os hooks de teleport (hook_e, hook_c) são injetados.
     cfg = load_config()
+
+    # ── Per-monitor DPI awareness (deve vir antes de qualquer QApplication) ──
+    if cfg.get('highDpiScaling', True):
+        QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+        QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
     if not cfg.get('teleportEnabled', True):
         os.environ['CD_TELEPORT_ENABLED'] = '0'
     os.environ['CD_NEARBY_CONTROLS_ENABLED'] = '1' if cfg.get('nearbyControlsEnabled', False) else '0'

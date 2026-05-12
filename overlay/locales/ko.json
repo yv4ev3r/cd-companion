@@ -156,6 +156,9 @@
   "settings.combo_heading_delta": "위치 델타",
   "settings.tooltip_heading_source": "자동: 가능하면 전방 벡터 사용, 불가 시 델타로 대체\n엔티티: 엔티티+0x80/0x88만 사용 (정지 시에도 작동)\n델타: 항상 위치 차이로 계산",
 
+  "settings.option_high_dpi_scaling": "High DPI 스케일링",
+  "settings.option_high_dpi_scaling_desc": "Windows 화면 배율에 맞게 UI를 조정합니다. 텍스트가 너무 크거나 화면이 이상하게 보이면 비활성화하세요. 재시작 필요.",
+
   "settings.option_disable_gpu_vsync": "GPU 수직동기화 비활성화 (다중 모니터 수정)",
   "settings.option_disable_gpu_vsync_desc": "보조 모니터 주사율이 다를 때 FPS 캡 문제 수정. 재시작 필요.",
 

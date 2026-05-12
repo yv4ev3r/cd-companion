@@ -156,6 +156,9 @@
   "settings.combo_heading_delta": "Delta de posição",
   "settings.tooltip_heading_source": "auto: usa vetor frontal quando disponível, usa delta como fallback\nentity: usa entity+0x80/0x88 apenas (funciona parado)\ndelta: sempre calcula a partir da diferença de posição",
 
+  "settings.option_high_dpi_scaling": "Escala High DPI",
+  "settings.option_high_dpi_scaling_desc": "Ajusta a interface ao zoom de exibição do Windows. Desative se o texto aparecer muito grande ou a interface parecer errada. Requer reinício.",
+
   "settings.option_disable_gpu_vsync": "Desativar vsync de GPU (correção multi-monitor)",
   "settings.option_disable_gpu_vsync_desc": "Corrige o limite de FPS ao usar o overlay em um monitor secundário com taxa de atualização diferente. Requer reinício.",
 

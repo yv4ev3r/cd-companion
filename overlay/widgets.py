@@ -204,6 +204,7 @@ QPushButton#save:hover { background:#17a84a; }
 QKeySequenceEdit, QComboBox {
     background:#e2e8f0; color:#111827; border:1px solid #64748b;
     border-radius:6px; padding:4px 8px; min-height:22px;
+    font:13px 'Segoe UI';
     selection-background-color:#ffd060; selection-color:#111827;
 }
 QKeySequenceEdit:focus, QComboBox:focus { border:1px solid #ffd060; }
@@ -385,7 +386,7 @@ class SettingsDialog(QDialog):
         self._lang_combo.setFixedHeight(32)
         self._lang_combo.setStyleSheet(
             "QComboBox{background:#e2e8f0;color:#111827;border:1px solid #64748b;"
-            "border-radius:6px;padding:4px 30px 4px 8px;}"
+            "border-radius:6px;padding:4px 30px 4px 8px;font:13px 'Segoe UI';}"
             "QComboBox:focus{border:1px solid #ffd060;}"
             "QComboBox::drop-down{subcontrol-origin:padding;subcontrol-position:top right;"
             "width:24px;border-left:1px solid #94a3b8;background:#cbd5e1;"
@@ -461,12 +462,14 @@ class SettingsDialog(QDialog):
         self._to_hk.setStyleSheet(
             "QKeySequenceEdit{background:#e2e8f0;color:#111827;"
             "border:1px solid #64748b;border-radius:6px;padding:4px 8px;"
+            "font:13px 'Segoe UI';"
             "selection-background-color:#ffd060;selection-color:#111827;}"
             "QKeySequenceEdit:focus{border:1px solid #ffd060;}")
         _to_hk_line = self._to_hk.findChild(QLineEdit)
         if _to_hk_line:
             _to_hk_line.setStyleSheet(
                 "QLineEdit{background:#e2e8f0;color:#111827;border:none;"
+                "font:13px 'Segoe UI';"
                 "selection-background-color:#ffd060;selection-color:#111827;}")
         self._to_hk.setToolTip(i18n.t('settings.hotkey_restart_tooltip'))
         self._to_hk._hk_finalized = False
@@ -544,7 +547,7 @@ class SettingsDialog(QDialog):
             self._to_ctrl_display.setFixedHeight(32)
             self._to_ctrl_display.setStyleSheet(
                 "QLineEdit{background:#e2e8f0;color:#111827;border:1px solid #64748b;"
-                "border-radius:6px;padding:4px 8px;}")
+                "border-radius:6px;padding:4px 8px;font:13px 'Segoe UI';}")
             self._to_ctrl_record_btn = QPushButton(i18n.t('settings.btn_record'))
             self._to_ctrl_record_btn.setFixedHeight(32)
             self._to_ctrl_record_btn.setStyleSheet(
@@ -630,12 +633,14 @@ class SettingsDialog(QDialog):
         self._focus_toggle_hk.setStyleSheet(
             "QKeySequenceEdit{background:#e2e8f0;color:#111827;"
             "border:1px solid #64748b;border-radius:6px;padding:4px 8px;"
+            "font:13px 'Segoe UI';"
             "selection-background-color:#ffd060;selection-color:#111827;}"
             "QKeySequenceEdit:focus{border:1px solid #ffd060;}")
         ft_hk_line = self._focus_toggle_hk.findChild(QLineEdit)
         if ft_hk_line:
             ft_hk_line.setStyleSheet(
                 "QLineEdit{background:#e2e8f0;color:#111827;border:none;"
+                "font:13px 'Segoe UI';"
                 "selection-background-color:#ffd060;selection-color:#111827;}")
         self._focus_toggle_hk.setToolTip(i18n.t('settings.hotkey_restart_tooltip'))
         self._focus_toggle_hk._hk_finalized = False
@@ -717,7 +722,7 @@ class SettingsDialog(QDialog):
             self._ft_ctrl_display.setFixedHeight(32)
             self._ft_ctrl_display.setStyleSheet(
                 "QLineEdit{background:#e2e8f0;color:#111827;border:1px solid #64748b;"
-                "border-radius:6px;padding:4px 8px;}")
+                "border-radius:6px;padding:4px 8px;font:13px 'Segoe UI';}")
             self._ft_ctrl_record_btn = QPushButton(i18n.t('settings.btn_record'))
             self._ft_ctrl_record_btn.setFixedHeight(32)
             self._ft_ctrl_record_btn.setStyleSheet(
@@ -909,12 +914,14 @@ class SettingsDialog(QDialog):
         self._nearby_hk.setStyleSheet(
             "QKeySequenceEdit{background:#e2e8f0;color:#111827;"
             "border:1px solid #64748b;border-radius:6px;padding:4px 8px;"
+            "font:13px 'Segoe UI';"
             "selection-background-color:#ffd060;selection-color:#111827;}"
             "QKeySequenceEdit:focus{border:1px solid #ffd060;}")
         hk_line = self._nearby_hk.findChild(QLineEdit)
         if hk_line:
             hk_line.setStyleSheet(
                 "QLineEdit{background:#e2e8f0;color:#111827;border:none;"
+                "font:13px 'Segoe UI';"
                 "selection-background-color:#ffd060;selection-color:#111827;}")
         self._nearby_hk.setToolTip(i18n.t('settings.hotkey_restart_tooltip'))
         self._nearby_hk._hk_finalized = False
@@ -1003,7 +1010,7 @@ class SettingsDialog(QDialog):
             self._nb_ctrl_display.setFixedHeight(32)
             self._nb_ctrl_display.setStyleSheet(
                 "QLineEdit{background:#e2e8f0;color:#111827;border:1px solid #64748b;"
-                "border-radius:6px;padding:4px 8px;}")
+                "border-radius:6px;padding:4px 8px;font:13px 'Segoe UI';}")
             self._nb_ctrl_record_btn = QPushButton(i18n.t('settings.btn_record'))
             self._nb_ctrl_record_btn.setFixedHeight(32)
             self._nb_ctrl_record_btn.setStyleSheet(
@@ -1096,12 +1103,14 @@ class SettingsDialog(QDialog):
         self._waypoints_hk.setStyleSheet(
             "QKeySequenceEdit{background:#e2e8f0;color:#111827;"
             "border:1px solid #64748b;border-radius:6px;padding:4px 8px;"
+            "font:13px 'Segoe UI';"
             "selection-background-color:#ffd060;selection-color:#111827;}"
             "QKeySequenceEdit:focus{border:1px solid #ffd060;}")
         wp_hk_line = self._waypoints_hk.findChild(QLineEdit)
         if wp_hk_line:
             wp_hk_line.setStyleSheet(
                 "QLineEdit{background:#e2e8f0;color:#111827;border:none;"
+                "font:13px 'Segoe UI';"
                 "selection-background-color:#ffd060;selection-color:#111827;}")
         self._waypoints_hk.setToolTip(i18n.t('settings.hotkey_restart_tooltip'))
         self._waypoints_hk._hk_finalized = False
@@ -1185,7 +1194,7 @@ class SettingsDialog(QDialog):
             self._wp_ctrl_display.setFixedHeight(32)
             self._wp_ctrl_display.setStyleSheet(
                 "QLineEdit{background:#e2e8f0;color:#111827;border:1px solid #64748b;"
-                "border-radius:6px;padding:4px 8px;}")
+                "border-radius:6px;padding:4px 8px;font:13px 'Segoe UI';}")
             self._wp_ctrl_record_btn = QPushButton(i18n.t('settings.btn_record'))
             self._wp_ctrl_record_btn.setFixedHeight(32)
             self._wp_ctrl_record_btn.setStyleSheet(
@@ -1290,7 +1299,7 @@ class SettingsDialog(QDialog):
         self._heading_combo.setFixedHeight(32)
         self._heading_combo.setStyleSheet(
             "QComboBox{background:#e2e8f0;color:#111827;border:1px solid #64748b;"
-            "border-radius:6px;padding:4px 30px 4px 8px;}"
+            "border-radius:6px;padding:4px 30px 4px 8px;font:13px 'Segoe UI';}"
             "QComboBox:focus{border:1px solid #ffd060;}"
             "QComboBox::drop-down{subcontrol-origin:padding;subcontrol-position:top right;"
             "width:24px;border-left:1px solid #94a3b8;background:#cbd5e1;"
@@ -1320,6 +1329,8 @@ class SettingsDialog(QDialog):
         tabs.addTab(perf_scroll, i18n.t('settings.tab_performance'))
 
         section(i18n.t('settings.section_performance'), perf_layout)
+        option('highDpiScaling', i18n.t('settings.option_high_dpi_scaling'),
+               i18n.t('settings.option_high_dpi_scaling_desc'))
         option('disableGpuVsync', i18n.t('settings.option_disable_gpu_vsync'),
                i18n.t('settings.option_disable_gpu_vsync_desc'))
 
@@ -1328,7 +1339,7 @@ class SettingsDialog(QDialog):
         self._realtime_transport_combo.setFixedHeight(32)
         self._realtime_transport_combo.setStyleSheet(
             "QComboBox{background:#e2e8f0;color:#111827;border:1px solid #64748b;"
-            "border-radius:6px;padding:4px 30px 4px 8px;}"
+            "border-radius:6px;padding:4px 30px 4px 8px;font:13px 'Segoe UI';}"
             "QComboBox:focus{border:1px solid #ffd060;}"
             "QComboBox::drop-down{subcontrol-origin:padding;subcontrol-position:top right;"
             "width:24px;border-left:1px solid #94a3b8;background:#cbd5e1;"
@@ -1374,12 +1385,14 @@ class SettingsDialog(QDialog):
         editor.setStyleSheet(
             "QKeySequenceEdit{background:#e2e8f0;color:#111827;"
             "border:1px solid #64748b;border-radius:6px;padding:4px 8px;"
+            "font:13px 'Segoe UI';"
             "selection-background-color:#ffd060;selection-color:#111827;}"
             "QKeySequenceEdit:focus{border:1px solid #ffd060;}")
         line = editor.findChild(QLineEdit)
         if line:
             line.setStyleSheet(
                 "QLineEdit{background:#e2e8f0;color:#111827;border:none;"
+                "font:13px 'Segoe UI';"
                 "selection-background-color:#ffd060;selection-color:#111827;}")
         editor.setToolTip(i18n.t('settings.hotkey_restart_tooltip'))
         editor._hk_finalized = False

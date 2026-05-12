@@ -1,3 +1,8 @@
+## v0.11.00
+
+### Added
+- High DPI scaling: the settings UI now scales correctly on displays set to 125%, 150%, or any other Windows display scaling. Can be toggled in Settings > Performance > High DPI scaling (enabled by default, requires restart).
+
 ## v0.10.05
 
 ### Fixed

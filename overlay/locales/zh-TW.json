@@ -156,6 +156,9 @@
   "settings.combo_heading_delta": "位置增量",
   "settings.tooltip_heading_source": "auto：可用時使用前方向量，否則改用增量\nentity：僅使用 entity+0x80/0x88（靜止時也有效）\ndelta：永遠根據位置差計算",
 
+  "settings.option_high_dpi_scaling": "高 DPI 縮放",
+  "settings.option_high_dpi_scaling_desc": "根據 Windows 顯示縮放調整介面。若文字過大或介面顯示異常，請停用此選項。需要重新啟動。",
+
   "settings.option_disable_gpu_vsync": "停用 GPU 垂直同步（多螢幕修正）",
   "settings.option_disable_gpu_vsync_desc": "修正副螢幕刷新率不同時使用覆蓋層導致 FPS 被限制的問題。需要重新啟動。",
 
