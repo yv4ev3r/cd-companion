@@ -59,6 +59,9 @@ MOD_SHIFT   = 0x0004
 MOD_ALT     = 0x0001
 HOTKEY_VK   = ord('M')
 
+# Hotkey: toggle window shape (square/circular)
+SHAPE_HOTKEY_ID = 3
+
 # Hotkey dev-only: Ctrl+Shift+Alt+R (restart overlay + server)
 if not getattr(sys, 'frozen', False):
     RESTART_HOTKEY_ID = 2
@@ -337,6 +340,7 @@ class OverlayWindow(QMainWindow):
         # ── Hotkey ─────────────────────────────────────────────────────
         self._signals = HotkeySignals()
         self._signals.toggle.connect(self._toggle_visible)
+        self._signals.toggle_shape.connect(self._toggle_shape)
         if not getattr(sys, 'frozen', False):
             self._signals.restart.connect(self._do_dev_restart)
         threading.Thread(target=self._hotkey_thread, daemon=True).start()
@@ -606,9 +610,11 @@ class OverlayWindow(QMainWindow):
                     self._bar.hide()
                     self._bar_visible = False
             if self._round_window and not was_round:
-                # Indo para circular: salva geometria quadrada e restaura tamanho circular
+                # Indo para circular: salva geometria/posicao quadrada e restaura circular
                 cfg['squareWidth'] = self.width()
                 cfg['squareHeight'] = self.height()
+                cfg['squareX'] = self.x()
+                cfg['squareY'] = self.y()
                 self._bar.hide()
                 self._bar_visible = False
                 round_size = cfg.get('roundWidth', 240)
@@ -617,8 +623,10 @@ class OverlayWindow(QMainWindow):
                 self._apply_mask()
                 self._update_bar_geometry()
             if not self._round_window and was_round:
-                # Saindo do modo circular: salva tamanho circular e restaura quadrado
+                # Saindo do modo circular: salva geometria/posicao circular e restaura quadrado
                 cfg['roundWidth'] = self.width()
+                cfg['roundX'] = self.x()
+                cfg['roundY'] = self.y()
                 square_w = cfg.get('squareWidth', DEFAULT_W)
                 square_h = cfg.get('squareHeight', DEFAULT_H)
                 self.resize(square_w, square_h)
@@ -695,6 +703,52 @@ class OverlayWindow(QMainWindow):
         payload = json.dumps(frame, separators=(',', ':'))
         self._view.page().runJavaScript(
             f'window.__cdNativeRealtime && window.__cdNativeRealtime({payload});')
+
+    def _toggle_shape(self):
+        """Alterna entre janela quadrada e circular, preservando posicao e tamanho de cada modo."""
+        cfg = load_config()
+        if self._round_window:
+            # Saindo do modo circular: salva posicao/tamanho circular, restaura quadrado
+            cfg['roundWidth'] = self.width()
+            cfg['roundX'] = self.x()
+            cfg['roundY'] = self.y()
+            square_w = cfg.get('squareWidth', DEFAULT_W)
+            square_h = cfg.get('squareHeight', DEFAULT_H)
+            square_x = cfg.get('squareX', self.x())
+            square_y = cfg.get('squareY', self.y())
+            self._round_window = False
+            cfg['roundWindow'] = False
+            self.resize(square_w, square_h)
+            self.move(square_x, square_y)
+            for btn in self._float_btns:
+                btn.hide()
+            self._float_btns_visible = False
+            if self._always_show_bar and not self._bar_visible:
+                self._bar.show()
+                self._bar.raise_()
+                self._bar_visible = True
+            self._apply_mask()
+            self._update_bar_geometry()
+            self._activate_for_waypoints()
+            self._view.setFocus()
+        else:
+            # Indo para modo circular: salva posicao/tamanho quadrado, restaura circular
+            cfg['squareWidth'] = self.width()
+            cfg['squareHeight'] = self.height()
+            cfg['squareX'] = self.x()
+            cfg['squareY'] = self.y()
+            round_size = cfg.get('roundWidth', 240)
+            round_x = cfg.get('roundX', self.x())
+            round_y = cfg.get('roundY', self.y())
+            self._round_window = True
+            cfg['roundWindow'] = True
+            self._bar.hide()
+            self._bar_visible = False
+            self.resize(round_size, round_size)
+            self.move(round_x, round_y)
+            self._apply_mask()
+            focus_game_window()
+        save_config(cfg)
 
     def _toggle_visible(self):
         if self.isVisible():
@@ -774,6 +828,24 @@ class OverlayWindow(QMainWindow):
             print("[!] Failed to register show/hide overlay hotkey")
             return
         print("[*] Hotkey registered: show/hide overlay")
+
+        # Load toggle_shape hotkey config
+        _ts_vk = 0
+        _ts_mod = 0
+        _shape_hotkey_registered = False
+        try:
+            _ts_data = json.load(open(_hk_file, 'r', encoding='utf-8')).get('toggle_shape', {})
+            _ts_vk  = _ts_data.get('vk', 0)
+            _ts_mod = _ts_data.get('mod_win', 0)
+        except Exception:
+            pass
+        if _ts_vk:
+            if user32.RegisterHotKey(None, SHAPE_HOTKEY_ID, _ts_mod, _ts_vk):
+                print("[*] Hotkey registered: toggle window shape")
+                _shape_hotkey_registered = True
+            else:
+                print("[!] Failed to register toggle window shape hotkey")
+
         if not getattr(sys, 'frozen', False):
             if user32.RegisterHotKey(None, RESTART_HOTKEY_ID, MOD_CONTROL | MOD_SHIFT | MOD_ALT, RESTART_HOTKEY_VK):
                 print("[*] Hotkey registered: Ctrl+Shift+Alt+R  →  restart (dev-only)")
@@ -784,16 +856,20 @@ class OverlayWindow(QMainWindow):
             if msg.message == WM_HOTKEY:
                 if msg.wParam == HOTKEY_ID:
                     self._signals.toggle.emit()
+                elif msg.wParam == SHAPE_HOTKEY_ID:
+                    self._signals.toggle_shape.emit()
                 elif not getattr(sys, 'frozen', False) and msg.wParam == RESTART_HOTKEY_ID:
                     self._signals.restart.emit()
             user32.TranslateMessage(ctypes.byref(msg))
             user32.DispatchMessageW(ctypes.byref(msg))
         user32.UnregisterHotKey(None, HOTKEY_ID)
+        if _shape_hotkey_registered:
+            user32.UnregisterHotKey(None, SHAPE_HOTKEY_ID)
         if not getattr(sys, 'frozen', False):
             user32.UnregisterHotKey(None, RESTART_HOTKEY_ID)
 
     def _controller_toggle_thread(self):
-        """Polls controller combo for show/hide overlay (toggle_overlay)."""
+        """Polls controller combos for show/hide overlay and toggle shape."""
         import time as _time
         try:
             from server.hotkeys import (
@@ -807,18 +883,24 @@ class OverlayWindow(QMainWindow):
         if not get_state:
             return
         settings = _load_controller_hotkey_settings()
-        mask = settings.get("toggle_overlay", 0)
-        pressed_last = False
+        overlay_mask = settings.get("toggle_overlay", 0)
+        shape_mask   = settings.get("toggle_shape", 0)
+        overlay_last = False
+        shape_last   = False
         while True:
             _time.sleep(0.05)
-            if not mask:
-                continue
             try:
                 buttons = _controller_buttons(get_state)
-                pressed = bool((buttons & mask) == mask)
-                if pressed and not pressed_last:
-                    self._signals.toggle.emit()
-                pressed_last = pressed
+                if overlay_mask:
+                    pressed = bool((buttons & overlay_mask) == overlay_mask)
+                    if pressed and not overlay_last:
+                        self._signals.toggle.emit()
+                    overlay_last = pressed
+                if shape_mask:
+                    pressed = bool((buttons & shape_mask) == shape_mask)
+                    if pressed and not shape_last:
+                        self._signals.toggle_shape.emit()
+                    shape_last = pressed
             except Exception:
                 pass
 
@@ -832,6 +914,16 @@ class OverlayWindow(QMainWindow):
             'x':      self.x(),
             'y':      self.y(),
         })
+        # Salva posicao e tamanho do modo atual para restaurar ao alternar
+        if self._round_window:
+            cfg['roundWidth'] = w
+            cfg['roundX'] = self.x()
+            cfg['roundY'] = self.y()
+        else:
+            cfg['squareWidth'] = w
+            cfg['squareHeight'] = self.height()
+            cfg['squareX'] = self.x()
+            cfg['squareY'] = self.y()
         if current_url and current_url not in ('about:blank', 'about:blank#blocked', ''):
             cfg['url'] = current_url
         save_config(cfg)

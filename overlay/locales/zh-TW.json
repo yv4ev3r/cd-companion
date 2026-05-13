@@ -126,6 +126,8 @@
 
   "settings.note_toggle_overlay": "顯示或隱藏覆蓋視窗。修改鍵盤設定後需要重新啟動。",
   "settings.note_focus_toggle": "在 Crimson Desert 與覆蓋地圖之間切換焦點。需要重新啟動。",
+  "settings.section_toggle_shape": "切換視窗形狀",
+  "settings.note_toggle_shape": "在方形和圓形視窗之間切換。每個模式記住自己的位置和大小。修改鍵盤設定後需要重新啟動。",
   "settings.note_hotkey_restart": "套用快捷鍵變更需要重新啟動。",
   "settings.note_controller_combo": "按住控制器組合鍵後放開。需要重新啟動。",
   "settings.note_realtime_transport": "需要重新啟動覆蓋層或重新載入地圖才能套用傳輸變更。",

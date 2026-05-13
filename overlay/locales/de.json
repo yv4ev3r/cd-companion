@@ -126,6 +126,8 @@
 
 "settings.note_toggle_overlay": "Zeigt oder versteckt das Overlay-Fenster. <b>**Tastaturänderung benötigt Neustart.**</b>",
 "settings.note_focus_toggle": "Wechselt den Fokus zwischen Crimson Desert und der Overlay-Karte. <b>**Neustart erforderlich.**</b>",
+"settings.section_toggle_shape": "Fensterform umschalten",
+"settings.note_toggle_shape": "Wechselt zwischen quadratischem und rundem Fenster. Jeder Modus merkt sich Position und Größe. Tastaturänderung benötigt Neustart.",
 "settings.note_hotkey_restart": "<b>Neustart erforderlich,</b> um den neuen Hotkey anzuwenden.",
 "settings.note_controller_combo": "Halte die Tastenkombination am Controller gedrückt und lasse sie dann los.<b>**Neustart erforderlich.**</b>",
 "settings.note_realtime_transport": "<b>Overlay neu starten oder Karte neu laden</b>, um Transportänderungen anzuwenden.",

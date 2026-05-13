@@ -1,3 +1,8 @@
+## v0.11.01
+
+### Added
+- Toggle window shape hotkey: switch between square and circular window using a configurable keyboard shortcut or controller button combo. Each mode remembers its own position and size. Switching to square focuses the overlay; switching to circular returns focus to the game. Configure in Settings > Window > Toggle window shape.
+
 ## v0.11.00
 
 ### Added

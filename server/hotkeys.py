@@ -87,6 +87,7 @@ DEFAULT_CONTROLLER_HOTKEYS = {
     "open_nearby": XINPUT_OPEN_NEARBY_MASK,
     "focus_toggle": XINPUT_FOCUS_TOGGLE_MASK,
     "toggle_overlay": 0,  # disabled by default
+    "toggle_shape": 0,    # disabled by default
 }
 
 
