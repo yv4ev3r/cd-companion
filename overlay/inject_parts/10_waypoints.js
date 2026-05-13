@@ -332,25 +332,25 @@
     el.id = 'cdWpPanel';
     el.style.cssText = `position:fixed;bottom:56px;left:12px;z-index:9999;
       background:rgba(12,12,18,.92);color:#e8e8e8;
-      font:12px/1.5 'Segoe UI',system-ui,sans-serif;
+      font:13px/1.5 'Segoe UI',system-ui,sans-serif;
       border:1px solid rgba(255,208,96,.25);border-radius:7px;
-      padding:8px 10px;width:224px;max-height:520px;
+      padding:10px 12px;width:260px;max-height:560px;
       backdrop-filter:blur(5px);box-shadow:0 4px 18px rgba(0,0,0,.5);
-      display:none;flex-direction:column;gap:5px;overflow:hidden;`;
+      display:none;flex-direction:column;gap:8px;overflow:hidden;`;
     el.innerHTML = `
-      <div style="display:flex;align-items:center;gap:6px">
-        <span style="color:#ffd060;font-weight:600;flex:1;font-size:12px">⭕ ${_t('waypoints.title')}</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="color:#ffd060;font-weight:600;flex:1;font-size:13px">⭕ ${_t('waypoints.title')}</span>
         <button id="cdWpSave" title="${_t('waypoints.save_btn_title')}"
           style="background:rgba(255,208,96,.15);border:1px solid rgba(255,208,96,.4);
-          color:#ffd060;font:11px 'Segoe UI';padding:2px 8px;border-radius:4px;cursor:pointer">
+          color:#ffd060;font:13px 'Segoe UI';padding:6px 14px;border-radius:5px;cursor:pointer">
           ${_t('waypoints.save')}
         </button>
       </div>
       <input id="cdWpFilter" placeholder="${_t('waypoints.filter_placeholder')}"
         style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
-        color:#e8e8e8;font:11px 'Segoe UI';padding:4px 7px;border-radius:4px;outline:none">
-      <div id="cdWpList" style="overflow-y:auto;max-height:170px;display:flex;
-        flex-direction:column;gap:3px;flex-shrink:0"></div>
+        color:#e8e8e8;font:13px 'Segoe UI';padding:8px 10px;border-radius:5px;outline:none">
+      <div id="cdWpList" style="overflow-y:auto;max-height:220px;display:flex;
+        flex-direction:column;gap:6px;flex-shrink:0"></div>
     `;
     document.body.appendChild(el);
 
@@ -411,17 +411,19 @@
       return;
     }
     list.innerHTML = items.map(({ wp, i }) => `
-      <div style="display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.04);
-        border-radius:4px;padding:3px 6px;">
-        <span style="flex:1;font-size:11px;white-space:nowrap;overflow:hidden;
+      <div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.04);
+        border-radius:5px;padding:8px 10px;min-height:44px;">
+        <span style="flex:1;font-size:13px;white-space:nowrap;overflow:hidden;
           text-overflow:ellipsis;color:#ccc" title="${wp.name}">${wp.name}</span>
         <button data-tp="${i}" title="${_t('waypoints.teleport_title')}"
           style="background:rgba(255,208,96,.15);border:1px solid rgba(255,208,96,.35);
-          color:#ffd060;font:10px 'Segoe UI';padding:1px 5px;border-radius:3px;
-          cursor:pointer;flex-shrink:0">${_t('waypoints.teleport_btn')}</button>
+          color:#ffd060;font:12px 'Segoe UI';padding:5px 10px;border-radius:4px;
+          cursor:pointer;flex-shrink:0;min-height:36px">${_t('waypoints.teleport_btn')}</button>
         <button data-del="${i}" title="${_t('waypoints.delete_btn_title')}"
-          style="background:transparent;border:none;color:#555;font:12px monospace;
-          cursor:pointer;padding:0 2px;flex-shrink:0">✕</button>
+          style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);
+          color:#888;font:14px monospace;cursor:pointer;padding:0;flex-shrink:0;
+          width:36px;height:36px;border-radius:4px;display:flex;align-items:center;
+          justify-content:center">✕</button>
       </div>
     `).join('');
 

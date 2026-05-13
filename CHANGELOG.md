@@ -1,3 +1,8 @@
+## v0.11.02
+
+### Changed
+- Waypoints panel: larger touch targets across the board. Each waypoint row is now at least 44px tall, the Teleport and Delete buttons are bigger, the filter input and Save button have more padding, and the panel is slightly wider.
+
 ## v0.11.01
 
 ### Added
