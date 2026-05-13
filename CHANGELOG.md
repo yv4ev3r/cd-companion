@@ -5,6 +5,10 @@
 
 ### Changed
 - Waypoints panel: larger touch targets across the board. Each waypoint row is now at least 44px tall, the Teleport and Delete buttons are bigger, the filter input and Save button have more padding, and the panel is slightly wider.
+- Resize ring in circular mode is now golden instead of blue.
+
+### Fixed
+- Floating buttons (Waypoints, Teleport to Center, Follow) now correctly reposition when toggling between square and circular window via hotkey or controller combo.
 
 ## v0.11.00
 

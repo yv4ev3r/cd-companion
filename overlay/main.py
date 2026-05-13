@@ -198,7 +198,7 @@ class _ResizeRingOverlay(QWidget):
         p.setRenderHint(QPainter.Antialiasing)
         b = self._border
         w, h = self.width(), self.height()
-        pen = QPen(QColor(160, 200, 255, 110))
+        pen = QPen(QColor(220, 170, 40, 160))
         pen.setWidth(b)
         p.setPen(pen)
         p.setBrush(Qt.NoBrush)
@@ -749,6 +749,9 @@ class OverlayWindow(QMainWindow):
             self._apply_mask()
             focus_game_window()
         save_config(cfg)
+        self._view.page().runJavaScript(
+            f'if(window.__cdSettings)window.__cdSettings.roundWindow={json.dumps(self._round_window)};'
+            f'window.__cdApplyRoundLayout && window.__cdApplyRoundLayout(window.__cdSettings);')
 
     def _toggle_visible(self):
         if self.isVisible():
