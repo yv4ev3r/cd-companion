@@ -80,7 +80,7 @@
       </div>
       <div style="display:flex;align-items:center;gap:7px">
         <span style="color:#bbb;font-size:11px;white-space:nowrap">Y <span id="cdCenterPanelYVal">${Math.round(getCenterTeleportY())}</span></span>
-        <input type="range" id="cdCenterPanelY" min="-5000" max="5000" step="10"
+        <input type="range" id="cdCenterPanelY" min="0" max="5000" step="5"
           value="${getCenterTeleportY()}"
           style="flex:1;min-width:110px;accent-color:#80b4ff;cursor:pointer">
       </div>
