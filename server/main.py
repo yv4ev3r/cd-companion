@@ -304,6 +304,9 @@ async def _handle_client(websocket):
                     _save_waypoints(_waypoints)
                     await _send_waypoints()
 
+            elif action == "get_waypoints":
+                await _send_waypoints(websocket)
+
             elif action == "waypoints_state":
                 set_waypoints_panel_open(bool(cmd.get("open", False)))
                 if cmd.get("open") and _waypoints_open_cb:
