@@ -126,6 +126,8 @@
 
   "settings.note_toggle_overlay": "Shows or hides the overlay window. Keyboard change requires restart.",
   "settings.note_focus_toggle": "Toggles focus between Crimson Desert and the overlay map. Restart required.",
+  "settings.section_toggle_shape": "Toggle window shape",
+  "settings.note_toggle_shape": "Switches between square and circular window. Each mode remembers its own position and size. Keyboard change requires restart.",
   "settings.note_hotkey_restart": "Restart required to apply hotkey change.",
   "settings.note_controller_combo": "Hold button combo on controller, then release. Restart required.",
   "settings.note_realtime_transport": "Restart overlay or reload the map to apply transport changes.",

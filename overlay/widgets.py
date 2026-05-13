@@ -799,6 +799,178 @@ class SettingsDialog(QDialog):
 
             self._ft_ctrl_record_btn.clicked.connect(_ft_start_record)
 
+        # Toggle window shape hotkey
+        section(i18n.t('settings.section_toggle_shape'), win_layout)
+        ts_hk_lbl = QLabel(i18n.t('settings.keyboard_hotkey_label'))
+        self._ts_hk = QKeySequenceEdit()
+        self._ts_hk.setFixedHeight(32)
+        self._ts_hk.setAttribute(Qt.WA_StyledBackground, True)
+        self._ts_hk.setStyleSheet(
+            "QKeySequenceEdit{background:#e2e8f0;color:#111827;"
+            "border:1px solid #64748b;border-radius:6px;padding:4px 8px;"
+            "font:13px 'Segoe UI';"
+            "selection-background-color:#ffd060;selection-color:#111827;}"
+            "QKeySequenceEdit:focus{border:1px solid #ffd060;}")
+        _ts_hk_line = self._ts_hk.findChild(QLineEdit)
+        if _ts_hk_line:
+            _ts_hk_line.setStyleSheet(
+                "QLineEdit{background:#e2e8f0;color:#111827;border:none;"
+                "font:13px 'Segoe UI';"
+                "selection-background-color:#ffd060;selection-color:#111827;}")
+        self._ts_hk.setToolTip(i18n.t('settings.hotkey_restart_tooltip'))
+        self._ts_hk._hk_finalized = False
+
+        def _ts_on_seq_changed(seq):
+            first = seq.toString().split(', ')[0]
+            if first != seq.toString():
+                self._ts_hk.setKeySequence(QKeySequence(first))
+            self._ts_hk._hk_finalized = True
+
+        def _ts_hk_key_press(e):
+            key = e.key()
+            mods = e.modifiers()
+            if key not in (Qt.Key_Shift, Qt.Key_Control, Qt.Key_Alt, Qt.Key_Meta):
+                if self._ts_hk._hk_finalized:
+                    self._ts_hk.clear()
+                    self._ts_hk._hk_finalized = False
+                if mods == Qt.NoModifier and key < 0x1000000:
+                    seq_str = QKeySequence(key).toString()
+                    if seq_str and _seq_str_to_vk(seq_str) is not None:
+                        self._ts_hk.setKeySequence(QKeySequence(key))
+                        self._ts_hk._hk_finalized = True
+                        return
+            QKeySequenceEdit.keyPressEvent(self._ts_hk, e)
+
+        self._ts_hk.keySequenceChanged.connect(_ts_on_seq_changed)
+        self._ts_hk.keyPressEvent = _ts_hk_key_press
+
+        def _ts_hk_focus_in(e):
+            if _set_nearby_hotkey_paused: _set_nearby_hotkey_paused(True)
+            QKeySequenceEdit.focusInEvent(self._ts_hk, e)
+        def _ts_hk_focus_out(e):
+            if _set_nearby_hotkey_paused: _set_nearby_hotkey_paused(False)
+            QKeySequenceEdit.focusOutEvent(self._ts_hk, e)
+        self._ts_hk.focusInEvent = _ts_hk_focus_in
+        self._ts_hk.focusOutEvent = _ts_hk_focus_out
+
+        ts_hk_vk = 0
+        ts_hk_mod_win = 0
+        try:
+            with open(_HOTKEY_SETTINGS_FILE, 'r', encoding='utf-8') as _f:
+                _ts_hk_data = json.load(_f).get('toggle_shape', {})
+                ts_hk_vk = _ts_hk_data.get('vk', ts_hk_vk)
+                ts_hk_mod_win = _ts_hk_data.get('mod_win', ts_hk_mod_win)
+        except Exception:
+            pass
+        if ts_hk_vk:
+            self._ts_hk.setKeySequence(QKeySequence(_vk_win_to_seq_str(ts_hk_vk, ts_hk_mod_win)))
+
+        ts_hk_row = QWidget()
+        ts_hk_row_layout = QHBoxLayout(ts_hk_row)
+        ts_hk_row_layout.setContentsMargins(0, 0, 0, 0)
+        ts_hk_row_layout.setSpacing(6)
+        ts_hk_row_layout.addWidget(self._ts_hk)
+        ts_hk_clear_btn = QPushButton(i18n.t('settings.btn_clear'))
+        ts_hk_clear_btn.setFixedHeight(32)
+        ts_hk_clear_btn.setStyleSheet(
+            "QPushButton{background:rgba(255,80,80,.15);border:1px solid rgba(255,80,80,.4);"
+            "color:#ff6060;border-radius:6px;padding:0 10px;font:11px 'Segoe UI';}"
+            "QPushButton:hover{background:rgba(255,80,80,.3);}")
+        ts_hk_clear_btn.clicked.connect(lambda: self._ts_hk.clear())
+        ts_hk_row_layout.addWidget(ts_hk_clear_btn)
+        active_layout[0].addWidget(ts_hk_lbl)
+        active_layout[0].addWidget(ts_hk_row)
+
+        if _HAS_CONTROLLER_HOTKEYS:
+            active_layout[0].addWidget(QLabel(i18n.t('settings.controller_combo_label')))
+            ts_ctrl_row = QWidget()
+            ts_ctrl_row_layout = QHBoxLayout(ts_ctrl_row)
+            ts_ctrl_row_layout.setContentsMargins(0, 0, 0, 0)
+            ts_ctrl_row_layout.setSpacing(6)
+            _ts_ctrl_settings = _load_controller_hotkey_settings()
+            _ts_ctrl_mask = _ts_ctrl_settings.get("toggle_shape", 0)
+            self._ts_ctrl_display = QLineEdit(mask_to_name(_ts_ctrl_mask))
+            self._ts_ctrl_display.setReadOnly(True)
+            self._ts_ctrl_display.setFixedHeight(32)
+            self._ts_ctrl_display.setStyleSheet(
+                "QLineEdit{background:#e2e8f0;color:#111827;border:1px solid #64748b;"
+                "border-radius:6px;padding:4px 8px;font:13px 'Segoe UI';}")
+            self._ts_ctrl_record_btn = QPushButton(i18n.t('settings.btn_record'))
+            self._ts_ctrl_record_btn.setFixedHeight(32)
+            self._ts_ctrl_record_btn.setStyleSheet(
+                "QPushButton{background:rgba(255,208,96,.18);"
+                "border:1px solid rgba(255,208,96,.5);"
+                "color:#ffd060;border-radius:6px;padding:0 10px;}"
+                "QPushButton:hover{background:rgba(255,208,96,.3);}"
+                "QPushButton:disabled{color:#666;border-color:#444;background:#222;}")
+            _ts_ctrl_clear_btn = QPushButton(i18n.t('settings.btn_clear'))
+            _ts_ctrl_clear_btn.setFixedHeight(32)
+            _ts_ctrl_clear_btn.setStyleSheet(
+                "QPushButton{background:rgba(255,80,80,.15);border:1px solid rgba(255,80,80,.4);"
+                "color:#ff6060;border-radius:6px;padding:0 10px;font:11px 'Segoe UI';}"
+                "QPushButton:hover{background:rgba(255,80,80,.3);}")
+
+            def _ts_ctrl_clear():
+                self._ts_ctrl_display.setText(i18n.t('settings.display_none'))
+                try:
+                    existing = _load_controller_hotkey_settings()
+                    existing["toggle_shape"] = 0
+                    _save_controller_hotkey_settings(existing)
+                except Exception:
+                    pass
+
+            _ts_ctrl_clear_btn.clicked.connect(_ts_ctrl_clear)
+            ts_ctrl_row_layout.addWidget(self._ts_ctrl_display)
+            ts_ctrl_row_layout.addWidget(self._ts_ctrl_record_btn)
+            ts_ctrl_row_layout.addWidget(_ts_ctrl_clear_btn)
+            active_layout[0].addWidget(ts_ctrl_row)
+
+            self._ts_ctrl_recording = False
+            self._ts_ctrl_peak_mask = 0
+            self._ts_ctrl_timer = QTimer()
+            self._ts_ctrl_timer.setInterval(50)
+            _ts_get_xinput = _load_xinput_get_state()
+
+            def _ts_ctrl_poll():
+                btns = _controller_buttons(_ts_get_xinput)
+                self._ts_ctrl_peak_mask |= btns
+                if self._ts_ctrl_peak_mask and btns == 0:
+                    saved_mask = self._ts_ctrl_peak_mask
+                    self._ts_ctrl_timer.stop()
+                    self._ts_ctrl_recording = False
+                    self._ts_ctrl_record_btn.setText(i18n.t('settings.btn_record'))
+                    self._ts_ctrl_record_btn.setEnabled(True)
+                    self._ts_ctrl_display.setText(mask_to_name(saved_mask))
+                    if _set_controller_hotkey_paused:
+                        _set_controller_hotkey_paused(False)
+                    try:
+                        existing = _load_controller_hotkey_settings()
+                        existing["toggle_shape"] = saved_mask
+                        _save_controller_hotkey_settings(existing)
+                    except Exception:
+                        pass
+
+            self._ts_ctrl_timer.timeout.connect(_ts_ctrl_poll)
+
+            def _ts_start_record():
+                if self._ts_ctrl_recording:
+                    return
+                self._ts_ctrl_recording = True
+                self._ts_ctrl_peak_mask = 0
+                self._ts_ctrl_display.setFocus()
+                self._ts_ctrl_record_btn.setText(i18n.t('settings.btn_recording'))
+                self._ts_ctrl_record_btn.setEnabled(False)
+                if _set_controller_hotkey_paused:
+                    _set_controller_hotkey_paused(True)
+                self._ts_ctrl_timer.start()
+
+            self._ts_ctrl_record_btn.clicked.connect(_ts_start_record)
+
+        ts_note = QLabel(i18n.t('settings.note_toggle_shape'))
+        ts_note.setWordWrap(True)
+        ts_note.setStyleSheet('color:#64748b; font:11px "Segoe UI"; margin-top:-4px;')
+        active_layout[0].addWidget(ts_note)
+
         win_layout.addStretch(1)
 
         # ══════════════════════════════════════════════════════════════
@@ -1482,6 +1654,8 @@ class SettingsDialog(QDialog):
         ft_parsed = _seq_str_to_vk(ft_seq_str)
         to_seq_str = self._to_hk.keySequence().toString()
         to_parsed = _seq_str_to_vk_win(to_seq_str)
+        ts_seq_str = self._ts_hk.keySequence().toString()
+        ts_parsed = _seq_str_to_vk_win(ts_seq_str)
         tp_marker_seq_str = self._tp_marker_hk.keySequence().toString()
         tp_marker_parsed = _seq_str_to_vk(tp_marker_seq_str)
         tp_abort_seq_str = self._tp_abort_hk.keySequence().toString()
@@ -1523,6 +1697,11 @@ class SettingsDialog(QDialog):
                 data['abort'] = {'vk': tp_abort_vk, 'mods': tp_abort_mods, 'enabled': True}
             else:
                 data['abort'] = {'vk': 0, 'mods': [], 'enabled': False}
+            if ts_parsed is not None:
+                ts_vk, ts_mod_win = ts_parsed
+                data['toggle_shape'] = {'vk': ts_vk, 'mod_win': ts_mod_win}
+            else:
+                data['toggle_shape'] = {'vk': 0, 'mod_win': 0}
             os.makedirs(os.path.dirname(_HOTKEY_SETTINGS_FILE), exist_ok=True)
             with open(_HOTKEY_SETTINGS_FILE, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=2)
@@ -1728,6 +1907,7 @@ class LoginPrompt(QDialog):
 class HotkeySignals(QObject):
     toggle = pyqtSignal()
     restart = pyqtSignal()
+    toggle_shape = pyqtSignal()
 
 
 # ── Barra customizada (arrastável, sem decoração do Windows) ──────────

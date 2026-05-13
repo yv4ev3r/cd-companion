@@ -126,6 +126,8 @@
 
   "settings.note_toggle_overlay": "显示或隐藏覆盖窗口。修改键盘设置后需要重启。",
   "settings.note_focus_toggle": "在 Crimson Desert 与覆盖地图之间切换焦点。需要重启。",
+  "settings.section_toggle_shape": "切换窗口形状",
+  "settings.note_toggle_shape": "在方形和圆形窗口之间切换。每个模式记住自己的位置和大小。修改键盘设置后需要重启。",
   "settings.note_hotkey_restart": "应用快捷键更改需要重启。",
   "settings.note_controller_combo": "按住手柄组合键后松开。需要重启。",
   "settings.note_realtime_transport": "需要重启覆盖层或重新加载地图以应用传输更改。",

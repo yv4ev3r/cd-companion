@@ -126,6 +126,8 @@
 
   "settings.note_toggle_overlay": "Mostra ou oculta a janela do overlay. Mudança de teclado requer reinício.",
   "settings.note_focus_toggle": "Alterna o foco entre Crimson Desert e o mapa do overlay. Reinício necessário.",
+  "settings.section_toggle_shape": "Alternar formato da janela",
+  "settings.note_toggle_shape": "Alterna entre janela quadrada e circular. Cada modo lembra sua própria posição e tamanho. Mudança de teclado requer reinício.",
   "settings.note_hotkey_restart": "Reinício necessário para aplicar a mudança de atalho.",
   "settings.note_controller_combo": "Segure a combinação de botões no controle e solte. Reinício necessário.",
   "settings.note_realtime_transport": "Reinicie o overlay ou recarregue o mapa para aplicar mudanças de transporte.",

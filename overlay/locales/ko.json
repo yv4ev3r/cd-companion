@@ -126,6 +126,8 @@
 
   "settings.note_toggle_overlay": "오버레이 창 표시/숨기기. 키보드 변경은 재시작 필요.",
   "settings.note_focus_toggle": "크림슨 데저트와 오버레이 맵 간 포커스 전환. 재시작 필요.",
+  "settings.section_toggle_shape": "창 모양 전환",
+  "settings.note_toggle_shape": "사각형과 원형 창 사이를 전환합니다. 각 모드는 자체 위치와 크기를 기억합니다. 키보드 변경은 재시작 필요.",
   "settings.note_hotkey_restart": "단축키 변경 적용을 위해 재시작 필요.",
   "settings.note_controller_combo": "컨트롤러에서 버튼 콤보를 누른 후 놓으세요. 재시작 필요.",
   "settings.note_realtime_transport": "전송 방식 변경 적용을 위해 오버레이 재시작 또는 맵 새로고침 필요.",
