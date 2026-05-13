@@ -3,6 +3,9 @@
 ### Added
 - Toggle window shape hotkey: switch between square and circular window using a configurable keyboard shortcut or controller button combo. Each mode remembers its own position and size. Switching to square focuses the overlay; switching to circular returns focus to the game. Configure in Settings > Window > Toggle window shape.
 
+### Changed
+- Waypoints panel: larger touch targets across the board. Each waypoint row is now at least 44px tall, the Teleport and Delete buttons are bigger, the filter input and Save button have more padding, and the panel is slightly wider.
+
 ## v0.11.00
 
 ### Added
