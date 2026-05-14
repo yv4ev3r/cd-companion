@@ -1,3 +1,8 @@
+## v0.11.02
+
+### Fixed
+- Switching to circular mode via controller combo no longer triggers the combo buttons in-game. Focus now returns to the game after a short delay, giving time for the buttons to be released.
+
 ## v0.11.01
 
 ### Added

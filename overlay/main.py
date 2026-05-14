@@ -747,7 +747,7 @@ class OverlayWindow(QMainWindow):
             self.resize(round_size, round_size)
             self.move(round_x, round_y)
             self._apply_mask()
-            focus_game_window()
+            QTimer.singleShot(300, focus_game_window)
         save_config(cfg)
         self._view.page().runJavaScript(
             f'if(window.__cdSettings)window.__cdSettings.roundWindow={json.dumps(self._round_window)};'
